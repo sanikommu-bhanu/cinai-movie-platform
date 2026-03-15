@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export const API_BASE = '/api'
+export const API_BASE = import.meta.env.VITE_API_URL
 
 /* ── Simple fetch cache ────────────────────────────────────────────────────── */
 const _cache   = new Map()
