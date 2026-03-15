@@ -64,7 +64,7 @@ export default function RecommendationsPage({ onMovieClick }) {
   const [topMovies, setTopMovies] = useState([])
 
   useEffect(() => {
-    apiFetch('/movies/top_rated').then(d => {
+    apiFetch('/top_rated').then(d => {
       const m = d.results || []
       setTopMovies(m.slice(0, 10))
       if (m.length) setBaseId(m[0].id)
@@ -74,7 +74,7 @@ export default function RecommendationsPage({ onMovieClick }) {
   useEffect(() => {
   if (!baseId) return
   setLoading(true)
-  apiFetch(`/movies/recommendations/${baseId}`, 120000)
+  apiFetch(`/recommendations/${baseId}`, 120000)
     .then(d => { setRecs(d.results || []); setLoading(false) })
     .catch(() => setLoading(false))
 }, [baseId])
