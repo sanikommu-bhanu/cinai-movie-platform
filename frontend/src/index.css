@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Film grain overlay ──────────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ── Skeleton shimmer ────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #111120 25%, #1e1e35 50%, #111120 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* ── Hide scrollbar ──────────────────────────────────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Glass morphism ──────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(13, 13, 26, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+/* ── Hero overlay ────────────────────────────────────────────────────────── */
+.hero-overlay {
+  background:
+    linear-gradient(to right,  rgba(8,8,15,0.92) 0%, rgba(8,8,15,0.55) 55%, rgba(8,8,15,0.1) 100%),
+    linear-gradient(to top,    rgba(8,8,15,1.00) 0%, rgba(8,8,15,0.30) 35%, transparent 70%);
+}
+
+/* ── Gradient text ───────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(130deg, #4f8ef7 0%, #a78bfa 50%, #f5a623 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Movie card hover ────────────────────────────────────────────────────── */
+.movie-card {
+  transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.28s ease;
+}
+.movie-card:hover {
+  transform: scale(1.06) translateY(-4px);
+  box-shadow: 0 22px 55px rgba(79, 142, 247, 0.18);
+}
+
+/* ── Confidence ring ─────────────────────────────────────────────────────── */
+.conf-ring { transition: stroke-dashoffset 1s ease; stroke-linecap: round; }
