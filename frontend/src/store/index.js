@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export const API_BASE = import.meta.env.VITE_API_URL
-
+export const API_BASE = "https://cinai-backend.onrender.com/api/movies"
 /* ── Simple fetch cache ────────────────────────────────────────────────────── */
 const _cache   = new Map()
 const _fly     = new Map()
