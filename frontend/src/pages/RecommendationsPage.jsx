@@ -72,12 +72,12 @@ export default function RecommendationsPage({ onMovieClick }) {
   }, [])
 
   useEffect(() => {
-    if (!baseId) return
-    setLoading(true)
-    apiFetch(`/recommendations/${baseId}`, 120000)
-      .then(d => { setRecs(d.results || []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [baseId])
+  if (!baseId) return
+  setLoading(true)
+  apiFetch(`/movies/recommendations/${baseId}`, 120000)
+    .then(d => { setRecs(d.results || []); setLoading(false) })
+    .catch(() => setLoading(false))
+}, [baseId])
 
   return (
     <PageWrapper className="pt-20 px-6">

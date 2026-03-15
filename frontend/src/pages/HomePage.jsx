@@ -19,13 +19,13 @@ export default function HomePage({ onMovieClick }) {
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useStore()
 
   useEffect(() => {
-    Promise.all([
-      apiFetch('/trending'),
-      apiFetch('/ai_picks'),
-      apiFetch('/hidden_gems'),
-      apiFetch('/movies/now_playing'),
-      apiFetch('/movies/top_rated'),
-    ]).then(([t, a, g, n, tr]) => {
+Promise.all([
+  apiFetch('/movies/trending'),
+  apiFetch('/movies/ai_picks'),
+  apiFetch('/movies/hidden_gems'),
+  apiFetch('/movies/now_playing'),
+  apiFetch('/movies/top_rated'),
+]).then(([t, a, g, n, tr]) => {
       const heroes = (t.results || []).filter(m => m.poster_path && m.backdrop_path).slice(0, 6)
       setHeroMovies(heroes)
       setTrending(t.results || [])
