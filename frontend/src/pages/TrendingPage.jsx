@@ -13,7 +13,7 @@ export default function TrendingPage({ onMovieClick }) {
 
   useEffect(() => {
     setLoading(true)
-    apiFetch(`/trending?time_window=${window_}`, 60000)
+    apiFetch(`/movies/trending?time_window=${window_}`, 60000)
       .then(d => { setMovies(d.results || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [window_])

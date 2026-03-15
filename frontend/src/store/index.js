@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export const API_BASE = "https://cinai-backend.onrender.com/api/movies"
+export const API_BASE = "https://cinai-backend.onrender.com/api"
 /* ── Simple fetch cache ────────────────────────────────────────────────────── */
 const _cache   = new Map()
 const _fly     = new Map()

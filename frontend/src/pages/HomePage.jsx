@@ -20,11 +20,11 @@ export default function HomePage({ onMovieClick }) {
 
   useEffect(() => {
 Promise.all([
-  apiFetch('/trending'),
+  apiFetch('/movies/trending'),
   apiFetch('/ai_picks'),
   apiFetch('/hidden_gems'),
-  apiFetch('/now_playing'),
-  apiFetch('/top_rated')
+  apiFetch('/movies/now_playing'),
+  apiFetch('/movies/top_rated')
 ]).then(([t, a, g, n, tr]) => {
       const heroes = (t.results || []).filter(m => m.poster_path && m.backdrop_path).slice(0, 6)
       setHeroMovies(heroes)
