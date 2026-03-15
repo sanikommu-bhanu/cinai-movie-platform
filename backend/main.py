@@ -111,7 +111,7 @@ async def health():
             "message": "CINAI ready" if ok else "Set TMDB_API_KEY in backend/.env"}
 
 # ── Trending ──────────────────────────────────────────────────────────────────
-@app.get("/api/trending")
+@app.get("/api/movies/trending")
 async def trending(time_window: str = "week"):
     tw = time_window if time_window in ("day", "week") else "week"
     d = await tmdb(f"/trending/movie/{tw}")
