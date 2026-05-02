@@ -6,6 +6,7 @@ Run: uvicorn main:app --reload --port 8000
 
 import asyncio, os, re, time
 from collections import defaultdict
+from contextlib import asynccontextmanager
 from typing import Optional
 
 import httpx
@@ -53,6 +54,8 @@ def _cset(k, d):
     _cache[k] = {"d": d, "t": time.time()}
 
 # ── TMDB helper ───────────────────────────────────────────────────────────────
+_tmdb_client: Optional[httpx.AsyncClient] = None
+
 async def tmdb(path: str, params: dict = None, ttl: int = 3600) -> dict:
     if not TMDB_KEY:
         raise HTTPException(500, "TMDB_API_KEY not set — add it to backend/.env")
@@ -61,17 +64,20 @@ async def tmdb(path: str, params: dict = None, ttl: int = 3600) -> dict:
     c = _cget(k, ttl)
     if c is not None:
         return c
-    async with httpx.AsyncClient(timeout=15) as cli:
-        try:
-            r = await cli.get(f"{TMDB_BASE}{path}", params=p)
-            r.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(e.response.status_code, f"TMDB error: {e.response.text[:300]}")
-        except httpx.RequestError as e:
-            raise HTTPException(503, f"TMDB unreachable: {e}")
-        d = r.json()
-        _cset(k, d)
-        return d
+    cli = _tmdb_client
+    if cli is None:
+        # Fallback for edge-cases where startup has not run.
+        cli = httpx.AsyncClient(timeout=15)
+    try:
+        r = await cli.get(f"{TMDB_BASE}{path}", params=p)
+        r.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(e.response.status_code, f"TMDB error: {e.response.text[:300]}")
+    except httpx.RequestError as e:
+        raise HTTPException(503, f"TMDB unreachable: {e}")
+    d = r.json()
+    _cset(k, d)
+    return d
 
 # ── Movie formatting ───────────────────────────────────────────────────────────
 def _hp(m): return bool(m.get("poster_path"))
@@ -100,7 +106,21 @@ def _flist(results) -> list:
     return [f for m in (results or []) if (f := _fmt(m))]
 
 # ── App ───────────────────────────────────────────────────────────────────────
-app = FastAPI(title="CINAI API", version="2.0.0")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    global _tmdb_client
+    _tmdb_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(15.0, connect=5.0),
+        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+    )
+    try:
+        yield
+    finally:
+        if _tmdb_client is not None:
+            await _tmdb_client.aclose()
+            _tmdb_client = None
+
+app = FastAPI(title="CINAI API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -122,6 +142,27 @@ async def trending(time_window: str = "week"):
     tw = time_window if time_window in ("day", "week") else "week"
     d = await tmdb(f"/trending/movie/{tw}")
     return {"results": _flist(d.get("results"))}
+
+# ── Home payload (single request for fastest first paint) ────────────────────
+@app.get("/api/home")
+async def home():
+    tr, ai, hg, np, tp = await asyncio.gather(
+        tmdb("/trending/movie/week", ttl=1800),
+        tmdb("/discover/movie", {"sort_by": "vote_average.desc", "vote_count.gte": "700",
+                                 "vote_average.gte": "7.8", "include_adult": "false"}, ttl=1800),
+        tmdb("/discover/movie", {"sort_by": "vote_average.desc", "vote_count.gte": "60",
+                                 "vote_count.lte": "700", "vote_average.gte": "7.3",
+                                 "include_adult": "false"}, ttl=1800),
+        tmdb("/movie/now_playing", ttl=1800),
+        tmdb("/movie/top_rated", ttl=1800),
+    )
+    return {
+        "trending": _flist(tr.get("results")),
+        "ai_picks": _flist(ai.get("results"))[:18],
+        "hidden_gems": _flist(hg.get("results"))[:18],
+        "now_playing": _flist(np.get("results")),
+        "top_rated": _flist(tp.get("results")),
+    }
 
 # ── Movie lists ───────────────────────────────────────────────────────────────
 @app.get("/api/movies/popular")
